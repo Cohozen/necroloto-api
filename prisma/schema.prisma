@@ -1,0 +1,62 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+}
+
+model User {
+  id             String   @id @default(uuid())
+  clerkId        String
+  email          String?  @unique
+  image          String?
+  username       String?
+  firstname      String?
+  lastname       String?
+  clerkCreatedAt DateTime @default(now())
+  clerkUpdatedAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  Bets           Bet[]
+}
+
+model Celebrity {
+  id               String             @id @default(uuid())
+  name             String
+  birth            DateTime?
+  death            DateTime?
+  photo            String?
+  CelebritiesOnBet CelebritiesOnBet[]
+}
+
+model Bet {
+  id               String             @id @default(uuid())
+  user             User               @relation(fields: [userId], references: [id])
+  userId           String
+  year             Int
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  CelebritiesOnBet CelebritiesOnBet[]
+
+  @@unique([userId, year])
+}
+
+model CelebritiesOnBet {
+  bet         Bet       @relation(fields: [betId], references: [id])
+  betId       String
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id])
+  celebrityId String
+  points      Float     @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@id([betId, celebrityId])
+}
