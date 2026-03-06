@@ -1,64 +1,57 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
-import { User, Prisma } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async user(userWhereUniqueInput: Prisma.UserWhereUniqueInput): Promise<User | null> {
-        return this.prisma.user.findUnique({
-            where: userWhereUniqueInput
-        });
-    }
+  async create(createUserDto: CreateUserDto) {
+    return this.prisma.user.create({
+      data: createUserDto,
+    });
+  }
 
-    async userByClerkId(clerkId: string): Promise<User | null> {
-        return this.prisma.user.findFirst({
-            where: {
-                clerkId
-            }
-        });
-    }
+  async findAll() {
+    return this.prisma.user.findMany({
+      include: {
+        Bets: true,
+        Membership: true,
+      },
+    });
+  }
 
-    async users(params: {
-        skip?: number;
-        take?: number;
-        cursor?: Prisma.UserWhereUniqueInput;
-        where?: Prisma.UserWhereInput;
-        orderBy?: Prisma.UserOrderByWithRelationInput;
-        include?: Prisma.UserInclude;
-    }): Promise<User[]> {
-        const { skip, take, cursor, where, orderBy, include } = params;
-        return this.prisma.user.findMany({
-            skip,
-            take,
-            cursor,
-            where,
-            orderBy,
-            include
-        });
-    }
+  async findOne(id: string) {
+    return this.prisma.user.findUnique({
+      where: { id },
+      include: {
+        Bets: true,
+        Membership: true,
+      },
+    });
+  }
 
-    async createUser(data: Prisma.UserCreateInput): Promise<User> {
-        return this.prisma.user.create({
-            data
-        });
-    }
+  async findByClerkId(clerkId: string) {
+    return this.prisma.user.findFirst({
+      where: { clerkId },
+      include: {
+        Bets: true,
+        Membership: true,
+      },
+    });
+  }
 
-    async updateUser(params: {
-        where: Prisma.UserWhereUniqueInput;
-        data: Prisma.UserUpdateInput;
-    }): Promise<User> {
-        const { where, data } = params;
-        return this.prisma.user.update({
-            data,
-            where
-        });
-    }
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    return this.prisma.user.update({
+      where: { id },
+      data: updateUserDto,
+    });
+  }
 
-    async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
-        return this.prisma.user.delete({
-            where
-        });
-    }
+  async remove(id: string) {
+    return this.prisma.user.delete({
+      where: { id },
+    });
+  }
 }

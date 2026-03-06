@@ -1,64 +1,47 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
-import { UsersService } from "./users.service";
-import { ClerkAuthGuard } from "../auth/guards/clerk.auth.guard";
-import { QueryDto } from "../../common/dtos/query.dto";
-import { ApiTags } from "@nestjs/swagger";
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
+import { UsersService } from './users.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
-@ApiTags("users")
-@Controller("users")
+@Controller('users')
 export class UsersController {
-    constructor(private readonly userService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
-    @Get(":id")
-    findOne(@Param("id") id: string) {
-        return this.userService.user({ id });
-    }
+  @Post()
+  create(@Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(createUserDto);
+  }
 
-    @Get()
-    findAll(@Query() query: QueryDto) {
-        const { skip, take, orderBy, searchString } = query;
+  @Get()
+  findAll() {
+    return this.usersService.findAll();
+  }
 
-        const or = searchString
-            ? {
-                  OR: [
-                      { firstname: { contains: searchString } },
-                      { lastname: { contains: searchString } },
-                      { email: { contains: searchString } }
-                  ]
-              }
-            : {};
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.usersService.findOne(id);
+  }
 
-        return this.userService.users({
-            skip: Number(skip) || undefined,
-            take: Number(take) || undefined,
-            where: {
-                ...or
-            },
-            orderBy: {
-                firstname: orderBy
-            }
-        });
-    }
+  @Get('clerk/:clerkId')
+  findByClerkId(@Param('clerkId') clerkId: string) {
+    return this.usersService.findByClerkId(clerkId);
+  }
 
-    @Post()
-    @UseGuards(ClerkAuthGuard)
-    create(@Body() createUserDto: Prisma.UserCreateInput) {
-        return this.userService.createUser(createUserDto);
-    }
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.usersService.update(id, updateUserDto);
+  }
 
-    @Put(":id")
-    update(@Param("id") id: string, @Body() updateUserDto: Prisma.UserUpdateInput) {
-        return this.userService.updateUser({
-            where: { id },
-            data: updateUserDto
-        });
-    }
-
-    @Delete(":id")
-    remove(@Param("id") id: string) {
-        return this.userService.deleteUser({
-            id
-        });
-    }
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
 }

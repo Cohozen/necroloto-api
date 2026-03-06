@@ -1,69 +1,45 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
-import { Celebrity, Prisma } from "@prisma/client";
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateCelebrityDto } from './dto/create-celebrity.dto';
+import { UpdateCelebrityDto } from './dto/update-celebrity.dto';
 
 @Injectable()
 export class CelebritiesService {
-    constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-    async celebrity(
-        celebrityWhereUniqueInput: Prisma.CelebrityWhereUniqueInput
-    ): Promise<Celebrity | null> {
-        return this.prisma.celebrity.findUnique({
-            where: celebrityWhereUniqueInput
-        });
-    }
+  async create(createCelebrityDto: CreateCelebrityDto) {
+    return this.prisma.celebrity.create({
+      data: createCelebrityDto,
+    });
+  }
 
-    async celebrities(params: {
-        skip?: number;
-        take?: number;
-        cursor?: Prisma.CelebrityWhereUniqueInput;
-        where?: Prisma.CelebrityWhereInput;
-        orderBy?: Prisma.CelebrityOrderByWithRelationInput;
-        include?: Prisma.CelebrityInclude;
-    }): Promise<Celebrity[]> {
-        const { skip, take, cursor, where, orderBy, include } = params;
-        return this.prisma.celebrity.findMany({
-            skip,
-            take,
-            cursor,
-            where,
-            orderBy,
-            include
-        });
-    }
+  async findAll() {
+    return this.prisma.celebrity.findMany({
+      include: {
+        CelebritiesOnBet: true,
+      },
+    });
+  }
 
-    async createCelebrity(data: Prisma.CelebrityCreateInput): Promise<Celebrity> {
-        return this.prisma.celebrity.create({
-            data
-        });
-    }
+  async findOne(id: string) {
+    return this.prisma.celebrity.findUnique({
+      where: { id },
+      include: {
+        CelebritiesOnBet: true,
+      },
+    });
+  }
 
-    async updateCelebrity(params: {
-        where: Prisma.CelebrityWhereUniqueInput;
-        data: Prisma.CelebrityUpdateInput;
-    }): Promise<Celebrity> {
-        const { where, data } = params;
-        return this.prisma.celebrity.update({
-            data,
-            where
-        });
-    }
+  async update(id: string, updateCelebrityDto: UpdateCelebrityDto) {
+    return this.prisma.celebrity.update({
+      where: { id },
+      data: updateCelebrityDto,
+    });
+  }
 
-    async updateCelebritiesOnBet(params: {
-        where: Prisma.CelebritiesOnBetWhereInput;
-        data: Prisma.CelebritiesOnBetUpdateInput;
-    }): Promise<Prisma.BatchPayload> {
-        const { where, data } = params;
-        return this.prisma.celebritiesOnBet.updateMany({
-            data,
-            where
-        });
-    }
-
-    async deleteCelebrity(where: Prisma.CelebrityWhereUniqueInput): Promise<Celebrity> {
-        return this.prisma.celebrity.delete({
-            where
-        });
-    }
+  async remove(id: string) {
+    return this.prisma.celebrity.delete({
+      where: { id },
+    });
+  }
 }
