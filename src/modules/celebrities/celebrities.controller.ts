@@ -6,11 +6,14 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { CelebritiesService } from './celebrities.service';
 import { CreateCelebrityDto } from './dto/create-celebrity.dto';
 import { UpdateCelebrityDto } from './dto/update-celebrity.dto';
+import { ClerkAuthGuard } from '../auth/guards/clerk.auth.guard';
 
+@UseGuards(ClerkAuthGuard)
 @Controller('celebrities')
 export class CelebritiesController {
   constructor(private readonly celebritiesService: CelebritiesService) {}

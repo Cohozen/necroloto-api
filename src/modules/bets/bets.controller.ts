@@ -6,12 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
 import { BetsService } from './bets.service';
 import { CreateBetDto } from './dto/create-bet.dto';
 import { UpdateBetDto } from './dto/update-bet.dto';
 import { AddCelebrityToBetDto } from './dto/add-celebrity-to-bet.dto';
+import { ClerkAuthGuard } from '../auth/guards/clerk.auth.guard';
 
+@UseGuards(ClerkAuthGuard)
 @Controller('bets')
 export class BetsController {
   constructor(private readonly betsService: BetsService) {}
