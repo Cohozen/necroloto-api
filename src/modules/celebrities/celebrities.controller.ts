@@ -11,6 +11,7 @@ import {
 import { CelebritiesService } from './celebrities.service';
 import { CreateCelebrityDto } from './dto/create-celebrity.dto';
 import { UpdateCelebrityDto } from './dto/update-celebrity.dto';
+import { SearchCelebrityDto } from './dto/search-celebrity.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk.auth.guard';
 
 @UseGuards(ClerkAuthGuard)
@@ -21,6 +22,19 @@ export class CelebritiesController {
   @Post()
   create(@Body() createCelebrityDto: CreateCelebrityDto) {
     return this.celebritiesService.create(createCelebrityDto);
+  }
+
+  @Post('search')
+  search(@Body() searchCelebrityDto: SearchCelebrityDto) {
+    return this.celebritiesService.search(searchCelebrityDto);
+  }
+
+  @Post(':sourceId/merge/:targetId')
+  merge(
+    @Param('sourceId') sourceId: string,
+    @Param('targetId') targetId: string,
+  ) {
+    return this.celebritiesService.merge(sourceId, targetId);
   }
 
   @Get()
