@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateBetDto } from './dto/create-bet.dto';
 import { UpdateBetDto } from './dto/update-bet.dto';
 import { AddCelebrityToBetDto } from './dto/add-celebrity-to-bet.dto';
+import { SearchBetDto } from './dto/search-bet.dto';
 
 @Injectable()
 export class BetsService {
@@ -81,6 +82,27 @@ export class BetsService {
   async findByCircle(circleId: string) {
     return this.prisma.bet.findMany({
       where: { circleId },
+      include: {
+        user: true,
+        Circle: true,
+        CelebritiesOnBet: {
+          include: {
+            celebrity: true,
+          },
+        },
+      },
+    });
+  }
+
+  async search(searchBetDto: SearchBetDto) {
+    const { userId, circleId, year } = searchBetDto;
+
+    return this.prisma.bet.findMany({
+      where: {
+        ...(userId && { userId }),
+        ...(circleId && { circleId }),
+        ...(year && { year }),
+      },
       include: {
         user: true,
         Circle: true,

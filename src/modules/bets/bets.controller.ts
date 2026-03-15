@@ -12,6 +12,7 @@ import { BetsService } from './bets.service';
 import { CreateBetDto } from './dto/create-bet.dto';
 import { UpdateBetDto } from './dto/update-bet.dto';
 import { AddCelebrityToBetDto } from './dto/add-celebrity-to-bet.dto';
+import { SearchBetDto } from './dto/search-bet.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk.auth.guard';
 
 @UseGuards(ClerkAuthGuard)
@@ -22,6 +23,11 @@ export class BetsController {
   @Post()
   create(@Body() createBetDto: CreateBetDto) {
     return this.betsService.create(createBetDto);
+  }
+
+  @Post('search')
+  search(@Body() searchBetDto: SearchBetDto) {
+    return this.betsService.search(searchBetDto);
   }
 
   @Get()
