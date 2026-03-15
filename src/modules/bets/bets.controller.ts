@@ -13,6 +13,7 @@ import { CreateBetDto } from './dto/create-bet.dto';
 import { UpdateBetDto } from './dto/update-bet.dto';
 import { AddCelebrityToBetDto } from './dto/add-celebrity-to-bet.dto';
 import { SearchBetDto } from './dto/search-bet.dto';
+import { UpdatePointsDto } from './dto/update-points.dto';
 import { ClerkAuthGuard } from '../auth/guards/clerk.auth.guard';
 
 @UseGuards(ClerkAuthGuard)
@@ -61,6 +62,15 @@ export class BetsController {
     @Body() dto: AddCelebrityToBetDto,
   ) {
     return this.betsService.addCelebrityToBet(id, dto);
+  }
+
+  @Patch(':betId/celebrities/:celebrityId/points')
+  updateCelebrityPoints(
+    @Param('betId') betId: string,
+    @Param('celebrityId') celebrityId: string,
+    @Body() dto: UpdatePointsDto,
+  ) {
+    return this.betsService.updateCelebrityPoints(betId, celebrityId, dto);
   }
 
   @Delete(':id/celebrities/:celebrityId')

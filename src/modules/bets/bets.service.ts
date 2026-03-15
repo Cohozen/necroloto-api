@@ -4,6 +4,7 @@ import { CreateBetDto } from './dto/create-bet.dto';
 import { UpdateBetDto } from './dto/update-bet.dto';
 import { AddCelebrityToBetDto } from './dto/add-celebrity-to-bet.dto';
 import { SearchBetDto } from './dto/search-bet.dto';
+import { UpdatePointsDto } from './dto/update-points.dto';
 
 @Injectable()
 export class BetsService {
@@ -136,6 +137,28 @@ export class BetsService {
       data: {
         betId,
         celebrityId: dto.celebrityId,
+      },
+      include: {
+        bet: true,
+        celebrity: true,
+      },
+    });
+  }
+
+  async updateCelebrityPoints(
+    betId: string,
+    celebrityId: string,
+    dto: UpdatePointsDto,
+  ) {
+    return this.prisma.celebritiesOnBet.update({
+      where: {
+        betId_celebrityId: {
+          betId,
+          celebrityId,
+        },
+      },
+      data: {
+        points: dto.points,
       },
       include: {
         bet: true,
