@@ -6,9 +6,10 @@ import { UsersModule } from './modules/users/users.module';
 import { CelebritiesModule } from './modules/celebrities/celebrities.module';
 import { BetsModule } from './modules/bets/bets.module';
 import { CircleModule } from './modules/circle/circle.module';
+import { MembershipModule } from './modules/membership/membership.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, CelebritiesModule, BetsModule, CircleModule],
+  imports: [PrismaModule, UsersModule, CelebritiesModule, BetsModule, CircleModule, MembershipModule],
   controllers: [AppController],
   providers: [AppService],
 })
