@@ -39,6 +39,11 @@ export class CircleController {
     return this.circleService.findByCode(code);
   }
 
+  @Get('user/:userId')
+  findByUser(@Param('userId') userId: string) {
+    return this.circleService.findByUser(userId);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCircleDto: UpdateCircleDto) {
     return this.circleService.update(id, updateCircleDto);

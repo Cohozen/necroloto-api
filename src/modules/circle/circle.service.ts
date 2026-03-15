@@ -72,6 +72,26 @@ export class CircleService {
     });
   }
 
+  async findByUser(userId: string) {
+    return this.prisma.circle.findMany({
+      where: {
+        memberships: {
+          some: {
+            userId,
+          },
+        },
+      },
+      include: {
+        memberships: {
+          include: {
+            user: true,
+          },
+        },
+        bets: true,
+      },
+    });
+  }
+
   async update(id: string, updateCircleDto: UpdateCircleDto) {
     return this.prisma.circle.update({
       where: { id },
