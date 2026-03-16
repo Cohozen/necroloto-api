@@ -9,7 +9,14 @@ import { CircleModule } from './modules/circle/circle.module';
 import { MembershipModule } from './modules/membership/membership.module';
 
 @Module({
-  imports: [PrismaModule, UsersModule, CelebritiesModule, BetsModule, CircleModule, MembershipModule],
+  imports: [
+    PrismaModule,
+    UsersModule,
+    CelebritiesModule,
+    BetsModule,
+    CircleModule,
+    MembershipModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
