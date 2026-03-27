@@ -1,5 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { BetsRepository } from "./bets.repository";
+import { BetsMapper } from "./bets.mapper";
+import { BetResponseDto, CelebrityOnBetResponseDto } from "./dto/bet-response.dto";
 import { CreateBetDto } from "./dto/create-bet.dto";
 import { UpdateBetDto } from "./dto/update-bet.dto";
 import { AddCelebrityToBetDto } from "./dto/add-celebrity-to-bet.dto";
@@ -8,175 +10,65 @@ import { UpdatePointsDto } from "./dto/update-points.dto";
 
 @Injectable()
 export class BetsService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private betsRepository: BetsRepository,
+        private betsMapper: BetsMapper
+    ) {}
 
-    async create(createBetDto: CreateBetDto) {
-        const { celebrityIds, ...betData } = createBetDto;
-
-        return this.prisma.bet.create({
-            data: {
-                ...betData,
-                CelebritiesOnBet: celebrityIds
-                    ? {
-                          create: celebrityIds.map((celebrityId) => ({
-                              celebrityId
-                          }))
-                      }
-                    : undefined
-            },
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async create(createBetDto: CreateBetDto): Promise<BetResponseDto> {
+        const bet = await this.betsRepository.create(createBetDto);
+        return this.betsMapper.toBetResponse(bet);
     }
 
-    async findAll() {
-        return this.prisma.bet.findMany({
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async findAll(): Promise<BetResponseDto[]> {
+        const bets = await this.betsRepository.findAll();
+        return this.betsMapper.toBetResponseList(bets);
     }
 
-    async findOne(id: string) {
-        return this.prisma.bet.findUnique({
-            where: { id },
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async findOne(id: string): Promise<BetResponseDto | null> {
+        const bet = await this.betsRepository.findById(id);
+        return bet ? this.betsMapper.toBetResponse(bet) : null;
     }
 
-    async findByUser(userId: string) {
-        return this.prisma.bet.findMany({
-            where: { userId },
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async findByUser(userId: string): Promise<BetResponseDto[]> {
+        const bets = await this.betsRepository.findByUser(userId);
+        return this.betsMapper.toBetResponseList(bets);
     }
 
-    async findByCircle(circleId: string) {
-        return this.prisma.bet.findMany({
-            where: { circleId },
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async findByCircle(circleId: string): Promise<BetResponseDto[]> {
+        const bets = await this.betsRepository.findByCircle(circleId);
+        return this.betsMapper.toBetResponseList(bets);
     }
 
-    async search(searchBetDto: SearchBetDto) {
-        const { userId, circleId, year } = searchBetDto;
-
-        return this.prisma.bet.findMany({
-            where: {
-                ...(userId && { userId }),
-                ...(circleId && { circleId }),
-                ...(year && { year })
-            },
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async search(searchBetDto: SearchBetDto): Promise<BetResponseDto[]> {
+        const bets = await this.betsRepository.search(searchBetDto);
+        return this.betsMapper.toBetResponseList(bets);
     }
 
-    async update(id: string, updateBetDto: UpdateBetDto) {
-        return this.prisma.bet.update({
-            where: { id },
-            data: updateBetDto,
-            include: {
-                user: true,
-                Circle: true,
-                CelebritiesOnBet: {
-                    include: {
-                        celebrity: true
-                    }
-                }
-            }
-        });
+    async update(id: string, updateBetDto: UpdateBetDto): Promise<BetResponseDto> {
+        const bet = await this.betsRepository.update(id, updateBetDto);
+        return this.betsMapper.toBetResponse(bet);
     }
 
-    async addCelebrityToBet(betId: string, dto: AddCelebrityToBetDto) {
-        return this.prisma.celebritiesOnBet.create({
-            data: {
-                betId,
-                celebrityId: dto.celebrityId
-            },
-            include: {
-                bet: true,
-                celebrity: true
-            }
-        });
+    async addCelebrityToBet(betId: string, dto: AddCelebrityToBetDto): Promise<CelebrityOnBetResponseDto> {
+        const entry = await this.betsRepository.addCelebrity(betId, dto);
+        return this.betsMapper.toCelebrityOnBetResponse(entry);
     }
 
-    async updateCelebrityPoints(betId: string, celebrityId: string, dto: UpdatePointsDto) {
-        return this.prisma.celebritiesOnBet.update({
-            where: {
-                betId_celebrityId: {
-                    betId,
-                    celebrityId
-                }
-            },
-            data: {
-                points: dto.points
-            },
-            include: {
-                bet: true,
-                celebrity: true
-            }
-        });
+    async updateCelebrityPoints(
+        betId: string,
+        celebrityId: string,
+        dto: UpdatePointsDto
+    ): Promise<CelebrityOnBetResponseDto> {
+        const entry = await this.betsRepository.updateCelebrityPoints(betId, celebrityId, dto);
+        return this.betsMapper.toCelebrityOnBetResponse(entry);
     }
 
-    async removeCelebrityFromBet(betId: string, celebrityId: string) {
-        return this.prisma.celebritiesOnBet.delete({
-            where: {
-                betId_celebrityId: {
-                    betId,
-                    celebrityId
-                }
-            }
-        });
+    async removeCelebrityFromBet(betId: string, celebrityId: string): Promise<void> {
+        await this.betsRepository.removeCelebrity(betId, celebrityId);
     }
 
-    async remove(id: string) {
-        return this.prisma.bet.delete({
-            where: { id }
-        });
+    async remove(id: string): Promise<void> {
+        await this.betsRepository.delete(id);
     }
 }
