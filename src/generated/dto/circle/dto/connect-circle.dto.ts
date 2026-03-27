@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ConnectCircleDto {
-  @ApiProperty({
-    type: 'string',
-  })
-  id: string;
+    @ApiProperty({
+        type: "string"
+    })
+    id: string;
 }

@@ -1,1 +1,1 @@
-export * from './celebrity.entity';
+export * from "./celebrity.entity";

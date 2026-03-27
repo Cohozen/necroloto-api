@@ -1,15 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateCelebrityDto {
-  @ApiProperty()
-  name?: string;
+    @ApiProperty()
+    name?: string;
 
-  @ApiProperty()
-  birth?: Date;
+    @ApiProperty()
+    birth?: Date;
 
-  @ApiProperty()
-  death?: Date;
+    @ApiProperty()
+    death?: Date;
 
-  @ApiProperty()
-  photo?: string;
+    @ApiProperty()
+    photo?: string;
 }

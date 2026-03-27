@@ -1,8 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ConnectCelebrityDto {
-  @ApiProperty({
-    type: 'string',
-  })
-  id: string;
+    @ApiProperty({
+        type: "string"
+    })
+    id: string;
 }

@@ -1,1 +1,1 @@
-export * from './celebrities-on-bet.entity';
+export * from "./celebrities-on-bet.entity";
