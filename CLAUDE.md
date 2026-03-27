@@ -49,6 +49,21 @@ All routes are protected by `ClerkAuthGuard` (in `src/auth/`). It extracts a Bea
 | `circles` | `/circle` | Betting groups with visibility/status/join-code |
 | `membership` | `/membership` | User membership in circles with roles (ADMIN/MEMBER) |
 
+### Module Architecture
+
+Most modules follow a **Controller → Service** pattern. The `bets` module uses a fuller layered architecture:
+
+```
+Controller → Service → Repository → PrismaService
+                ↓
+            Mapper → Response DTOs
+```
+
+- **Repository** (`*.repository.ts`) — all Prisma queries; owns the `include` shape
+- **Mapper** (`*.mapper.ts`) — converts Prisma results to typed response DTOs; input types are inferred with `Awaited<ReturnType<Repository[method]>>`
+- **Response DTOs** (`dto/*-response.dto.ts`) — classes with `@ApiProperty` decorators; used as explicit return types on service methods and `@ApiResponse` types on controller routes
+- DELETE endpoints return HTTP 204 with no body (`void`)
+
 ### Key Data Relationships
 - A **Bet** belongs to one User and one Circle for a given year
 - **CelebritiesOnBet** is the junction table linking Bets to Celebrities, with a `points` field
