@@ -1,57 +1,43 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { UsersRepository } from "./users.repository";
+import { UsersMapper } from "./users.mapper";
+import { UserResponseDto } from "./dto/user-response.dto";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 
 @Injectable()
 export class UsersService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private usersRepository: UsersRepository,
+        private usersMapper: UsersMapper
+    ) {}
 
-    async create(createUserDto: CreateUserDto) {
-        return this.prisma.user.create({
-            data: createUserDto
-        });
+    async create(dto: CreateUserDto): Promise<UserResponseDto> {
+        const user = await this.usersRepository.create(dto);
+        return this.usersMapper.toUserResponse(user);
     }
 
-    async findAll() {
-        return this.prisma.user.findMany({
-            include: {
-                Bets: true,
-                Membership: true
-            }
-        });
+    async findAll(): Promise<UserResponseDto[]> {
+        const users = await this.usersRepository.findAll();
+        return this.usersMapper.toUserResponseList(users);
     }
 
-    async findOne(id: string) {
-        return this.prisma.user.findUnique({
-            where: { id },
-            include: {
-                Bets: true,
-                Membership: true
-            }
-        });
+    async findOne(id: string): Promise<UserResponseDto | null> {
+        const user = await this.usersRepository.findById(id);
+        return user ? this.usersMapper.toUserResponse(user) : null;
     }
 
-    async findByClerkId(clerkId: string) {
-        return this.prisma.user.findFirst({
-            where: { clerkId },
-            include: {
-                Bets: true,
-                Membership: true
-            }
-        });
+    async findByClerkId(clerkId: string): Promise<UserResponseDto | null> {
+        const user = await this.usersRepository.findByClerkId(clerkId);
+        return user ? this.usersMapper.toUserResponse(user) : null;
     }
 
-    async update(id: string, updateUserDto: UpdateUserDto) {
-        return this.prisma.user.update({
-            where: { id },
-            data: updateUserDto
-        });
+    async update(id: string, dto: UpdateUserDto): Promise<UserResponseDto> {
+        const user = await this.usersRepository.update(id, dto);
+        return this.usersMapper.toUserResponse(user);
     }
 
-    async remove(id: string) {
-        return this.prisma.user.delete({
-            where: { id }
-        });
+    async remove(id: string): Promise<void> {
+        await this.usersRepository.delete(id);
     }
 }
