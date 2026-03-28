@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { BetsRepository } from "./bets.repository";
 import { BetsMapper } from "./bets.mapper";
 import { BetResponseDto, CelebrityOnBetResponseDto } from "./dto/bet-response.dto";
@@ -12,11 +13,20 @@ import { UpdatePointsDto } from "./dto/update-points.dto";
 export class BetsService {
     constructor(
         private betsRepository: BetsRepository,
-        private betsMapper: BetsMapper
+        private betsMapper: BetsMapper,
+        private eventEmitter: EventEmitter2
     ) {}
 
     async create(createBetDto: CreateBetDto): Promise<BetResponseDto> {
         const bet = await this.betsRepository.create(createBetDto);
+        if (bet.circleId) {
+            this.eventEmitter.emit("bet.created", {
+                circleId: bet.circleId,
+                userId: bet.userId,
+                year: bet.year,
+                betId: bet.id
+            });
+        }
         return this.betsMapper.toBetResponse(bet);
     }
 
@@ -52,6 +62,15 @@ export class BetsService {
 
     async addCelebrityToBet(betId: string, dto: AddCelebrityToBetDto): Promise<CelebrityOnBetResponseDto> {
         const entry = await this.betsRepository.addCelebrity(betId, dto);
+        if (entry.bet.circleId) {
+            this.eventEmitter.emit("bet.celebrity_added", {
+                circleId: entry.bet.circleId,
+                userId: entry.bet.userId,
+                betId: entry.bet.id,
+                celebrityId: entry.celebrity.id,
+                celebrityName: entry.celebrity.name
+            });
+        }
         return this.betsMapper.toCelebrityOnBetResponse(entry);
     }
 
@@ -61,6 +80,16 @@ export class BetsService {
         dto: UpdatePointsDto
     ): Promise<CelebrityOnBetResponseDto> {
         const entry = await this.betsRepository.updateCelebrityPoints(betId, celebrityId, dto);
+        if (entry.bet.circleId && dto.points > 0) {
+            this.eventEmitter.emit("bet.points_earned", {
+                circleId: entry.bet.circleId,
+                userId: entry.bet.userId,
+                betId: entry.bet.id,
+                celebrityId: entry.celebrity.id,
+                celebrityName: entry.celebrity.name,
+                points: dto.points
+            });
+        }
         return this.betsMapper.toCelebrityOnBetResponse(entry);
     }
 

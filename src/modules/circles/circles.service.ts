@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CirclesRepository } from "./circles.repository";
 import { CirclesMapper } from "./circles.mapper";
 import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.dto";
@@ -10,7 +11,8 @@ import { AddMemberDto } from "./dto/add-member.dto";
 export class CirclesService {
     constructor(
         private circleRepository: CirclesRepository,
-        private circleMapper: CirclesMapper
+        private circleMapper: CirclesMapper,
+        private eventEmitter: EventEmitter2
     ) {}
 
     async create(dto: CreateCircleDto): Promise<CircleResponseDto> {
@@ -44,6 +46,11 @@ export class CirclesService {
 
     async addMember(circleId: string, dto: AddMemberDto): Promise<MembershipResponseDto> {
         const membership = await this.circleRepository.addMember(circleId, dto);
+        this.eventEmitter.emit("circle.member_joined", {
+            circleId,
+            userId: dto.userId,
+            role: membership.role
+        });
         return this.circleMapper.toMembershipResponse(membership);
     }
 

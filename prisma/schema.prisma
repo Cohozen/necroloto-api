@@ -30,6 +30,13 @@ enum CircleVisibility {
   PUBLIC
 }
 
+enum ActivityType {
+  BET_CREATED
+  CELEBRITY_ADDED
+  POINTS_EARNED
+  MEMBER_JOINED
+}
+
 model User {
   id             String       @id @default(uuid())
   clerkId        String
@@ -44,6 +51,7 @@ model User {
   updatedAt      DateTime     @updatedAt
   Bets           Bet[]
   Membership     Membership[]
+  activities     CircleActivity[]
 }
 
 model Celebrity {
@@ -92,6 +100,7 @@ model Circle {
   updatedAt   DateTime         @updatedAt
   memberships Membership[]
   bets        Bet[]
+  activities  CircleActivity[]
 }
 
 model Membership {
@@ -104,4 +113,15 @@ model Membership {
   joinedAt DateTime       @default(now())
 
   @@unique([userId, circleId])
+}
+
+model CircleActivity {
+  id        String       @id @default(uuid())
+  circleId  String
+  userId    String
+  type      ActivityType
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  circle    Circle       @relation(fields: [circleId], references: [id])
+  user      User         @relation(fields: [userId], references: [id])
 }
