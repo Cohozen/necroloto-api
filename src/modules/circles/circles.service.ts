@@ -1,23 +1,22 @@
 import { Injectable } from "@nestjs/common";
-import { CircleRepository } from "./circle.repository";
-import { CircleMapper } from "./circle.mapper";
+import { CirclesRepository } from "./circles.repository";
+import { CirclesMapper } from "./circles.mapper";
 import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.dto";
 import { CreateCircleDto } from "./dto/create-circle.dto";
 import { UpdateCircleDto } from "./dto/update-circle.dto";
 import { AddMemberDto } from "./dto/add-member.dto";
 
 @Injectable()
-export class CircleService {
+export class CirclesService {
     constructor(
-        private circleRepository: CircleRepository,
-        private circleMapper: CircleMapper
+        private circleRepository: CirclesRepository,
+        private circleMapper: CirclesMapper
     ) {}
 
     async create(dto: CreateCircleDto): Promise<CircleResponseDto> {
         const circle = await this.circleRepository.create(dto);
         return this.circleMapper.toCircleResponse(circle);
     }
-
     async findAll(): Promise<CircleResponseDto[]> {
         const circles = await this.circleRepository.findAll();
         return this.circleMapper.toCircleResponseList(circles);

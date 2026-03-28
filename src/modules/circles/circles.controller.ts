@@ -11,7 +11,7 @@ import {
     HttpStatus
 } from "@nestjs/common";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
-import { CircleService } from "./circle.service";
+import { CirclesService } from "./circles.service";
 import { CreateCircleDto } from "./dto/create-circle.dto";
 import { UpdateCircleDto } from "./dto/update-circle.dto";
 import { AddMemberDto } from "./dto/add-member.dto";
@@ -21,8 +21,8 @@ import { ClerkAuthGuard } from "../auth/guards/clerk.auth.guard";
 @ApiTags("circle")
 @UseGuards(ClerkAuthGuard)
 @Controller("circle")
-export class CircleController {
-    constructor(private readonly circleService: CircleService) {}
+export class CirclesController {
+    constructor(private readonly circleService: CirclesService) {}
 
     @Post()
     @ApiCreatedResponse({ type: CircleResponseDto })

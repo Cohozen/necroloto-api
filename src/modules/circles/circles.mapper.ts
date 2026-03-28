@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { CircleRepository } from "./circle.repository";
+import { CirclesRepository } from "./circles.repository";
 import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.dto";
 
-type CircleWithRelations = Awaited<ReturnType<CircleRepository["findAll"]>>[number];
-type MembershipWithRelations = Awaited<ReturnType<CircleRepository["addMember"]>>;
+type CircleWithRelations = Awaited<ReturnType<CirclesRepository["findAll"]>>[number];
+type MembershipWithRelations = Awaited<ReturnType<CirclesRepository["addMember"]>>;
 
 @Injectable()
-export class CircleMapper {
+export class CirclesMapper {
     toCircleResponse(circle: CircleWithRelations): CircleResponseDto {
         return {
             id: circle.id,

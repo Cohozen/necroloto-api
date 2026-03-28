@@ -23,7 +23,7 @@ const CIRCLE_INCLUDE = {
 } as const;
 
 @Injectable()
-export class CircleRepository {
+export class CirclesRepository {
     constructor(private prisma: PrismaService) {}
 
     create(dto: CreateCircleDto) {
