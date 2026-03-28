@@ -10,22 +10,6 @@ generator client {
   moduleFormat = "cjs"
 }
 
-generator nestjsDto {
-  provider                        = "prisma-generator-nestjs-dto"
-  output                          = "../src/generated/dto"
-  outputToNestJsResourceStructure = "true"
-  flatResourceStructure           = "false"
-  exportRelationModifierClasses   = "true"
-  reExport                        = "true"
-  createDtoPrefix                 = "Create"
-  updateDtoPrefix                 = "Update"
-  dtoSuffix                       = "Dto"
-  entityPrefix                    = ""
-  entitySuffix                    = ""
-  fileNamingStyle                 = "kebab"
-  prettier                        = "true"
-}
-
 datasource db {
   provider = "postgresql"
 }
@@ -46,9 +30,7 @@ enum CircleVisibility {
   PUBLIC
 }
 
-/// @namespace User
 model User {
-  /// @DtoReadOnly
   id             String       @id @default(uuid())
   clerkId        String
   email          String?      @unique
@@ -58,110 +40,67 @@ model User {
   lastname       String?
   clerkCreatedAt DateTime     @default(now())
   clerkUpdatedAt DateTime     @default(now())
-  /// @DtoReadOnly
   createdAt      DateTime     @default(now())
-  /// @DtoReadOnly
   updatedAt      DateTime     @updatedAt
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   Bets           Bet[]
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   Membership     Membership[]
 }
 
-/// @namespace Celebrity
 model Celebrity {
-  /// @DtoReadOnly
   id               String             @id @default(uuid())
   name             String
   birth            DateTime?          @db.Date
   death            DateTime?          @db.Date
   photo            String?
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   CelebritiesOnBet CelebritiesOnBet[]
 }
 
-/// @namespace Bet
 model Bet {
-  /// @DtoReadOnly
   id               String             @id @default(uuid())
   userId           String
   circleId         String?
   year             Int
-  /// @DtoReadOnly
   createdAt        DateTime           @default(now())
-  /// @DtoReadOnly
   updatedAt        DateTime           @updatedAt
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
   user             User               @relation(fields: [userId], references: [id])
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   Circle           Circle?            @relation(fields: [circleId], references: [id])
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   CelebritiesOnBet CelebritiesOnBet[]
 
   @@unique([userId, circleId, year])
 }
 
-/// @namespace CelebritiesOnBet
 model CelebritiesOnBet {
   betId       String
   celebrityId String
-  /// @DtoReadOnly
   createdAt   DateTime  @default(now())
-  /// @DtoReadOnly
   updatedAt   DateTime  @updatedAt
   points      Float     @default(0)
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
   bet         Bet       @relation(fields: [betId], references: [id])
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
   celebrity   Celebrity @relation(fields: [celebrityId], references: [id])
 
   @@id([betId, celebrityId])
 }
 
-/// @namespace Circle
 model Circle {
-  /// @DtoReadOnly
   id          String           @id @default(uuid())
   name        String
   visibility  CircleVisibility @default(PRIVATE)
   status      CircleStatus     @default(OPEN)
   code        String?
   allowNewBet Boolean
-  /// @DtoReadOnly
   createdAt   DateTime         @default(now())
-  /// @DtoReadOnly
   updatedAt   DateTime         @updatedAt
-
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   memberships Membership[]
-  /// @DtoRelationCanConnectOnCreate
-  /// @DtoRelationCanDisconnectOnUpdate
   bets        Bet[]
 }
 
-/// @namespace Membership
 model Membership {
-  /// @DtoReadOnly
   id       String         @id @default(uuid())
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
   user     User           @relation(fields: [userId], references: [id])
   userId   String
-  /// @DtoRelationRequired
-  /// @DtoRelationCanConnectOnCreate
   circle   Circle         @relation(fields: [circleId], references: [id])
   circleId String
   role     MembershipRole @default(MEMBER)
-  /// @DtoReadOnly
   joinedAt DateTime       @default(now())
 
   @@unique([userId, circleId])
