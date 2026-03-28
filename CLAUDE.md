@@ -48,6 +48,7 @@ All routes are protected by `ClerkAuthGuard` (in `src/auth/`). It extracts a Bea
 | `bets` | `/bets` | User bets on celebrities; unique per (user, circle, year) |
 | `circles` | `/circle` | Betting groups with visibility/status/join-code |
 | `membership` | `/membership` | User membership in circles with roles (ADMIN/MEMBER) |
+| `activity` | — | Event-driven feed of circle activity (no dedicated route; consumed via `CircleActivity`) |
 
 ### Module Architecture
 
@@ -66,13 +67,34 @@ Controller → Service → Repository → PrismaService
 
 ### Key Data Relationships
 - A **Bet** belongs to one User and one Circle for a given year
-- **CelebritiesOnBet** is the junction table linking Bets to Celebrities, with a `points` field
+- **CelebritiesOnBet** is the junction table linking Bets to Celebrities, with a `points` field (denormalized cache — kept in sync via `PointsEvent`)
+- **PointsEvent** is the event log for every points attribution; it is the source of truth for scoring history and is used for time-based ranking queries
 - A **Circle** has a `code` for joining, `status` (OPEN/LOCKED/ARCHIVED), and `visibility` (PUBLIC/PRIVATE)
 - **Membership** tracks which Users are in which Circles and their role
+
+### Points & Ranking System
+
+Points follow an **event sourcing** pattern:
+
+- `CelebritiesOnBet.points` — denormalized cache for fast reads; always kept in sync with `PointsEvent`
+- `PointsEvent` — append-only log; every call to `updateCelebrityPoints` writes here atomically (via `$transaction`) alongside the cache update
+- `UpdatePointsDto.reason` — optional string tag on each event (`"celebrity_death"` by default; supports future values like `"bonus"`, `"correction"`)
+- Backfilled entries use `reason = "backfill"`
+
+**Adding new points attributions**: always go through `BetsRepository.updateCelebrityPoints`, which runs a `$transaction` to update both tables atomically. Never write to one without the other.
+
+**Ranking** (`GET /circle/:circleId/ranking?year=&date=`):
+- Computed from `PointsEvent` filtered by `createdAt <= date`
+- Tiebreaker order: total points → number of scored deaths → date of first score (earliest wins)
+- Ranking logic lives in `CirclesService.getRanking`; mapper (`toRankingEntry`) only handles field conversion
+
+**Points history** (`GET /bets/:betId/points-history`): returns all `PointsEvent` for a bet, ordered by `createdAt` asc.
 
 ### Code Style
 - Prettier config: double quotes, 4-space tabs, no trailing commas, 100 char width
 - TypeScript path aliases: `@/prisma/*` and `@/dto/*`
+- Business logic (sorting, ranking, tiebreaking) belongs in the **service**, not the mapper
+- Mapper methods are pure shape converters: Prisma result → DTO fields, no business rules
 
 ### Environment Variables
 - `DATABASE_URL` — PostgreSQL connection string (Neon)
