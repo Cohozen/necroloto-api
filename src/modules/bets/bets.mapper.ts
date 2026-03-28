@@ -1,9 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { BetsRepository } from "./bets.repository";
-import { BetResponseDto, CelebrityOnBetResponseDto } from "./dto/bet-response.dto";
+import { BetResponseDto, CelebrityOnBetResponseDto, PointsEventResponseDto } from "./dto/bet-response.dto";
 
 type BetWithRelations = Awaited<ReturnType<BetsRepository["findAll"]>>[number];
 type CelebrityOnBetWithRelations = Awaited<ReturnType<BetsRepository["addCelebrity"]>>;
+type PointsEventWithRelations = Awaited<ReturnType<BetsRepository["findPointsHistory"]>>[number];
 
 @Injectable()
 export class BetsMapper {
@@ -67,5 +68,23 @@ export class BetsMapper {
                 photo: entry.celebrity.photo
             }
         };
+    }
+
+    toPointsHistoryResponse(events: PointsEventWithRelations[]): PointsEventResponseDto[] {
+        return events.map((e) => ({
+            id: e.id,
+            betId: e.betId,
+            celebrityId: e.celebrityId,
+            points: e.points,
+            reason: e.reason,
+            createdAt: e.createdAt,
+            celebrity: {
+                id: e.celebrity.id,
+                name: e.celebrity.name,
+                birth: e.celebrity.birth,
+                death: e.celebrity.death,
+                photo: e.celebrity.photo
+            }
+        }));
     }
 }

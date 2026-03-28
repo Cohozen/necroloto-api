@@ -69,4 +69,17 @@ export class CirclesRepository {
             where: { userId_circleId: { userId, circleId } }
         });
     }
+
+    getRankingData(circleId: string, year: number, date: Date) {
+        return this.prisma.bet.findMany({
+            where: { circleId, year },
+            include: {
+                user: true,
+                pointsEvents: {
+                    where: { createdAt: { lte: date } },
+                    orderBy: { createdAt: "asc" }
+                }
+            }
+        });
+    }
 }

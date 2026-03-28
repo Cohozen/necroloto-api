@@ -120,3 +120,26 @@ export class CelebrityOnBetResponseDto {
     @ApiProperty({ type: () => CelebrityInBetDto })
     celebrity: CelebrityInBetDto;
 }
+
+export class PointsEventResponseDto {
+    @ApiProperty()
+    id: string;
+
+    @ApiProperty()
+    betId: string;
+
+    @ApiProperty()
+    celebrityId: string;
+
+    @ApiProperty()
+    points: number;
+
+    @ApiProperty()
+    reason: string;
+
+    @ApiProperty()
+    createdAt: Date;
+
+    @ApiProperty({ type: () => CelebrityInBetDto })
+    celebrity: CelebrityInBetDto;
+}

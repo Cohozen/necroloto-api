@@ -150,6 +150,46 @@ export class CircleInMembershipDto {
     code: string | null;
 }
 
+export class RankingEntryDto {
+    @ApiProperty()
+    rank: number;
+
+    @ApiProperty()
+    userId: string;
+
+    @ApiProperty({ nullable: true })
+    username: string | null;
+
+    @ApiProperty({ nullable: true })
+    firstname: string | null;
+
+    @ApiProperty({ nullable: true })
+    lastname: string | null;
+
+    @ApiProperty({ nullable: true })
+    image: string | null;
+
+    @ApiProperty()
+    points: number;
+
+    @ApiProperty({ description: "Number of scored celebrity deaths" })
+    deathCount: number;
+}
+
+export class RankingResponseDto {
+    @ApiProperty()
+    circleId: string;
+
+    @ApiProperty()
+    year: number;
+
+    @ApiProperty()
+    date: Date;
+
+    @ApiProperty({ type: () => [RankingEntryDto] })
+    entries: RankingEntryDto[];
+}
+
 export class MembershipResponseDto {
     @ApiProperty()
     id: string;

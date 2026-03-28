@@ -61,6 +61,7 @@ model Celebrity {
   death            DateTime?          @db.Date
   photo            String?
   CelebritiesOnBet CelebritiesOnBet[]
+  pointsEvents     PointsEvent[]
 }
 
 model Bet {
@@ -73,6 +74,7 @@ model Bet {
   user             User               @relation(fields: [userId], references: [id])
   Circle           Circle?            @relation(fields: [circleId], references: [id])
   CelebritiesOnBet CelebritiesOnBet[]
+  pointsEvents     PointsEvent[]
 
   @@unique([userId, circleId, year])
 }
@@ -124,4 +126,15 @@ model CircleActivity {
   createdAt DateTime     @default(now())
   circle    Circle       @relation(fields: [circleId], references: [id])
   user      User         @relation(fields: [userId], references: [id])
+}
+
+model PointsEvent {
+  id          String    @id @default(uuid())
+  betId       String
+  celebrityId String
+  points      Float
+  reason      String
+  createdAt   DateTime  @default(now())
+  bet         Bet       @relation(fields: [betId], references: [id])
+  celebrity   Celebrity @relation(fields: [celebrityId], references: [id])
 }

@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { CirclesRepository } from "./circles.repository";
 import { CirclesMapper } from "./circles.mapper";
-import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.dto";
+import { CircleResponseDto, MembershipResponseDto, RankingResponseDto } from "./dto/circle-response.dto";
 import { CreateCircleDto } from "./dto/create-circle.dto";
 import { UpdateCircleDto } from "./dto/update-circle.dto";
 import { AddMemberDto } from "./dto/add-member.dto";
@@ -56,6 +56,22 @@ export class CirclesService {
 
     async removeMember(circleId: string, userId: string): Promise<void> {
         await this.circleRepository.removeMember(circleId, userId);
+    }
+
+    async getRanking(circleId: string, year: number, date: Date): Promise<RankingResponseDto> {
+        const bets = await this.circleRepository.getRankingData(circleId, year, date);
+        const entries = bets
+            .map((bet) => this.circleMapper.toRankingEntry(bet))
+            .sort((a, b) => {
+                if (b.points !== a.points) return b.points - a.points;
+                if (b.deathCount !== a.deathCount) return b.deathCount - a.deathCount;
+                if (a.firstScoredAt && b.firstScoredAt)
+                    return a.firstScoredAt.getTime() - b.firstScoredAt.getTime();
+                return 0;
+            })
+            .map(({ firstScoredAt: _, ...entry }, i) => ({ ...entry, rank: i + 1 }));
+
+        return { circleId, year, date, entries };
     }
 
     async remove(id: string): Promise<void> {

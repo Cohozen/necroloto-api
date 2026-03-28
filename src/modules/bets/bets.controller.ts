@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
 import { BetsService } from "./bets.service";
-import { BetResponseDto, CelebrityOnBetResponseDto } from "./dto/bet-response.dto";
+import { BetResponseDto, CelebrityOnBetResponseDto, PointsEventResponseDto } from "./dto/bet-response.dto";
 import { CreateBetDto } from "./dto/create-bet.dto";
 import { UpdateBetDto } from "./dto/update-bet.dto";
 import { AddCelebrityToBetDto } from "./dto/add-celebrity-to-bet.dto";
@@ -72,6 +72,12 @@ export class BetsController {
     @ApiCreatedResponse({ type: CelebrityOnBetResponseDto })
     addCelebrityToBet(@Param("id") id: string, @Body() dto: AddCelebrityToBetDto) {
         return this.betsService.addCelebrityToBet(id, dto);
+    }
+
+    @Get(":betId/points-history")
+    @ApiOkResponse({ type: [PointsEventResponseDto] })
+    getPointsHistory(@Param("betId") betId: string) {
+        return this.betsService.getPointsHistory(betId);
     }
 
     @Patch(":betId/celebrities/:celebrityId/points")

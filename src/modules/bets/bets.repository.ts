@@ -83,16 +83,37 @@ export class BetsRepository {
     }
 
     updateCelebrityPoints(betId: string, celebrityId: string, dto: UpdatePointsDto) {
-        return this.prisma.celebritiesOnBet.update({
-            where: { betId_celebrityId: { betId, celebrityId } },
-            data: { points: dto.points },
-            include: { bet: true, celebrity: true }
+        return this.prisma.$transaction(async (tx) => {
+            const entry = await tx.celebritiesOnBet.update({
+                where: { betId_celebrityId: { betId, celebrityId } },
+                data: { points: dto.points },
+                include: { bet: true, celebrity: true }
+            });
+
+            await tx.pointsEvent.create({
+                data: {
+                    betId,
+                    celebrityId,
+                    points: dto.points,
+                    reason: dto.reason ?? "celebrity_death"
+                }
+            });
+
+            return entry;
         });
     }
 
     removeCelebrity(betId: string, celebrityId: string) {
         return this.prisma.celebritiesOnBet.delete({
             where: { betId_celebrityId: { betId, celebrityId } }
+        });
+    }
+
+    findPointsHistory(betId: string) {
+        return this.prisma.pointsEvent.findMany({
+            where: { betId },
+            include: { celebrity: true },
+            orderBy: { createdAt: "asc" }
         });
     }
 }

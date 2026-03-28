@@ -4,6 +4,7 @@ import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.
 
 type CircleWithRelations = Awaited<ReturnType<CirclesRepository["findAll"]>>[number];
 type MembershipWithRelations = Awaited<ReturnType<CirclesRepository["addMember"]>>;
+type RankingData = Awaited<ReturnType<CirclesRepository["getRankingData"]>>[number];
 
 @Injectable()
 export class CirclesMapper {
@@ -67,6 +68,19 @@ export class CirclesMapper {
 
     toCircleResponseList(circles: CircleWithRelations[]): CircleResponseDto[] {
         return circles.map((c) => this.toCircleResponse(c));
+    }
+
+    toRankingEntry(bet: RankingData) {
+        return {
+            userId: bet.userId,
+            username: bet.user.username,
+            firstname: bet.user.firstname,
+            lastname: bet.user.lastname,
+            image: bet.user.image,
+            points: bet.pointsEvents.reduce((sum, e) => sum + e.points, 0),
+            deathCount: bet.pointsEvents.length,
+            firstScoredAt: bet.pointsEvents[0]?.createdAt ?? null
+        };
     }
 
     toMembershipResponse(membership: MembershipWithRelations): MembershipResponseDto {

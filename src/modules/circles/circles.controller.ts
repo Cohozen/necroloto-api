@@ -6,16 +6,27 @@ import {
     Patch,
     Param,
     Delete,
+    Query,
     UseGuards,
     HttpCode,
     HttpStatus
 } from "@nestjs/common";
-import { ApiCreatedResponse, ApiNoContentResponse, ApiOkResponse, ApiTags } from "@nestjs/swagger";
+import {
+    ApiCreatedResponse,
+    ApiNoContentResponse,
+    ApiOkResponse,
+    ApiQuery,
+    ApiTags
+} from "@nestjs/swagger";
 import { CirclesService } from "./circles.service";
 import { CreateCircleDto } from "./dto/create-circle.dto";
 import { UpdateCircleDto } from "./dto/update-circle.dto";
 import { AddMemberDto } from "./dto/add-member.dto";
-import { CircleResponseDto, MembershipResponseDto } from "./dto/circle-response.dto";
+import {
+    CircleResponseDto,
+    MembershipResponseDto,
+    RankingResponseDto
+} from "./dto/circle-response.dto";
 import { ClerkAuthGuard } from "../auth/guards/clerk.auth.guard";
 
 @ApiTags("circle")
@@ -64,6 +75,23 @@ export class CirclesController {
     @ApiCreatedResponse({ type: MembershipResponseDto })
     addMember(@Param("id") id: string, @Body() dto: AddMemberDto) {
         return this.circleService.addMember(id, dto);
+    }
+
+    @Get(":id/ranking")
+    @ApiOkResponse({ type: RankingResponseDto })
+    @ApiQuery({ name: "year", type: Number })
+    @ApiQuery({
+        name: "date",
+        required: false,
+        type: String,
+        description: "ISO date string (defaults to now)"
+    })
+    getRanking(@Param("id") id: string, @Query("year") year: string, @Query("date") date?: string) {
+        return this.circleService.getRanking(
+            id,
+            parseInt(year, 10),
+            date ? new Date(date) : new Date()
+        );
     }
 
     @Delete(":id/members/:userId")

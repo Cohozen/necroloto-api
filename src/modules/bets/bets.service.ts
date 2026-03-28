@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { BetsRepository } from "./bets.repository";
 import { BetsMapper } from "./bets.mapper";
-import { BetResponseDto, CelebrityOnBetResponseDto } from "./dto/bet-response.dto";
+import { BetResponseDto, CelebrityOnBetResponseDto, PointsEventResponseDto } from "./dto/bet-response.dto";
 import { CreateBetDto } from "./dto/create-bet.dto";
 import { UpdateBetDto } from "./dto/update-bet.dto";
 import { AddCelebrityToBetDto } from "./dto/add-celebrity-to-bet.dto";
@@ -95,6 +95,11 @@ export class BetsService {
 
     async removeCelebrityFromBet(betId: string, celebrityId: string): Promise<void> {
         await this.betsRepository.removeCelebrity(betId, celebrityId);
+    }
+
+    async getPointsHistory(betId: string): Promise<PointsEventResponseDto[]> {
+        const events = await this.betsRepository.findPointsHistory(betId);
+        return this.betsMapper.toPointsHistoryResponse(events);
     }
 
     async remove(id: string): Promise<void> {
