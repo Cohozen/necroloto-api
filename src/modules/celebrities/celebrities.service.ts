@@ -1,86 +1,49 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import { CelebritiesRepository } from "./celebrities.repository";
+import { CelebritiesMapper } from "./celebrities.mapper";
+import { CelebrityResponseDto } from "./dto/celebrity-response.dto";
 import { CreateCelebrityDto } from "./dto/create-celebrity.dto";
 import { UpdateCelebrityDto } from "./dto/update-celebrity.dto";
 import { SearchCelebrityDto } from "./dto/search-celebrity.dto";
 
 @Injectable()
 export class CelebritiesService {
-    constructor(private prisma: PrismaService) {}
+    constructor(
+        private celebritiesRepository: CelebritiesRepository,
+        private celebritiesMapper: CelebritiesMapper
+    ) {}
 
-    async create(createCelebrityDto: CreateCelebrityDto) {
-        return this.prisma.celebrity.create({
-            data: createCelebrityDto
-        });
+    async create(dto: CreateCelebrityDto): Promise<CelebrityResponseDto> {
+        const celebrity = await this.celebritiesRepository.create(dto);
+        return this.celebritiesMapper.toCelebrityResponse(celebrity);
     }
 
-    async findAll() {
-        return this.prisma.celebrity.findMany({
-            include: {
-                CelebritiesOnBet: true
-            }
-        });
+    async findAll(): Promise<CelebrityResponseDto[]> {
+        const celebrities = await this.celebritiesRepository.findAll();
+        return this.celebritiesMapper.toCelebrityResponseList(celebrities);
     }
 
-    async findOne(id: string) {
-        return this.prisma.celebrity.findUnique({
-            where: { id },
-            include: {
-                CelebritiesOnBet: true
-            }
-        });
+    async findOne(id: string): Promise<CelebrityResponseDto | null> {
+        const celebrity = await this.celebritiesRepository.findById(id);
+        return celebrity ? this.celebritiesMapper.toCelebrityResponse(celebrity) : null;
     }
 
-    async update(id: string, updateCelebrityDto: UpdateCelebrityDto) {
-        return this.prisma.celebrity.update({
-            where: { id },
-            data: updateCelebrityDto
-        });
+    async search(dto: SearchCelebrityDto): Promise<CelebrityResponseDto[]> {
+        const celebrities = await this.celebritiesRepository.search(dto);
+        return this.celebritiesMapper.toCelebrityResponseList(celebrities);
     }
 
-    async remove(id: string) {
-        return this.prisma.celebrity.delete({
-            where: { id }
-        });
+    async update(id: string, dto: UpdateCelebrityDto): Promise<CelebrityResponseDto> {
+        const celebrity = await this.celebritiesRepository.update(id, dto);
+        return this.celebritiesMapper.toCelebrityResponse(celebrity);
     }
 
-    async search(searchCelebrityDto: SearchCelebrityDto) {
-        const { name, isAlive, birthYear } = searchCelebrityDto;
-
-        return this.prisma.celebrity.findMany({
-            where: {
-                ...(name && {
-                    name: {
-                        contains: name,
-                        mode: "insensitive"
-                    }
-                }),
-                ...(isAlive !== undefined && {
-                    death: isAlive ? null : { not: null }
-                }),
-                ...(birthYear && {
-                    birth: {
-                        gte: new Date(`${birthYear}-01-01`),
-                        lt: new Date(`${birthYear + 1}-01-01`)
-                    }
-                })
-            },
-            include: {
-                CelebritiesOnBet: true
-            }
-        });
+    async remove(id: string): Promise<void> {
+        await this.celebritiesRepository.delete(id);
     }
 
-    async merge(sourceId: string, targetId: string) {
-        // Update all CelebritiesOnBet from source to target
-        await this.prisma.celebritiesOnBet.updateMany({
-            where: { celebrityId: sourceId },
-            data: { celebrityId: targetId }
-        });
-
-        // Delete the source celebrity
-        return this.prisma.celebrity.delete({
-            where: { id: sourceId }
-        });
+    async merge(sourceId: string, targetId: string): Promise<CelebrityResponseDto> {
+        const celebrity = await this.celebritiesRepository.merge(sourceId, targetId);
+        return this.celebritiesMapper.toCelebrityResponse(celebrity);
     }
 }
